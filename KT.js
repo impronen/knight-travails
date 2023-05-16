@@ -1,75 +1,55 @@
 #!/usr/bin/env node
-class Node {
-  constructor(boardSquare) {
-    this.square = boardSquare;
-    this.parent = null;
-    this.children = [];
-  }
+function Node(square, path) {
+  if (square[0] < 0 || square[0] > 7 || square[1] < 0 || square[1] > 7) return;
+  return { square, path };
 }
 
-class knight {
-  constructor(current, goal) {
-    this.moves = [
-      [1, 2],
-      [2, 1],
-      [2, -1],
-      [1, -2],
-      [-1, -2],
-      [-2, -1],
-      [-2, 1],
-      [-1, 2],
+function knightMoves([x, y], [a, b]) {
+  // Initialize the queueu and variable for saving the path later
+  const trampledPath = [];
+  const queue = [Node([x, y], [[x, y]])];
+  // Grab the first element from queue
+  let currentNode = queue.shift();
+
+  while (currentNode.square[0] !== a || currentNode.square[1] !== b) {
+    // We loop until current coordinates match goal
+    let legalMoves = [
+      [currentNode.square[0] + 2, currentNode.square[1] - 1],
+      [currentNode.square[0] + 2, currentNode.square[1] + 1],
+      [currentNode.square[0] - 2, currentNode.square[1] - 1],
+      [currentNode.square[0] - 2, currentNode.square[1] + 1],
+      [currentNode.square[0] + 1, currentNode.square[1] - 2],
+      [currentNode.square[0] + 1, currentNode.square[1] + 2],
+      [currentNode.square[0] - 1, currentNode.square[1] - 2],
+      [currentNode.square[0] - 1, currentNode.square[1] + 2],
     ];
-    this.start = current;
-    this.goal = goal;
-    this.trampledPath = new Set();
-  }
-
-  possibleMoves(currrentSquare) {
-    const legalMoves = [];
-    this.moves.forEach((move) => {
-      const x = move[0] + currrentSquare[0];
-      const y = move[1] + currrentSquare[1];
-      if (x < 0 || x > 7 || y < 0 || y > 7) return;
-      legalMoves.push([x, y]);
-    });
-    return legalMoves;
-  }
-
-  pathfinder() {
-    const travPath = [];
-    // Start by placing the startSquare to the queue
-    const queue = [];
-    queue.push({ node: new Node(this.start) });
-    console.log(queue);
-
-    while (queue.length > 0) {
-      // We keep emptying the queue
-      const currentNode = queue.shift();
-
-      if (
-        currentNode.node.square[0] === this.goal[0] &&
-        currentNode.node.square[1] === this.goal[1]
-      ) {
-        let tempN = currentNode;
-        while (tempN) {
-          travPath.unshift(tempN);
-          tempN = tempN.parent;
-        }
-        return travPath;
+    legalMoves.forEach((move) => {
+      // We push possible next nodes to the queue
+      const nextNode = Node(move, currentNode.path.concat([move]));
+      if (nextNode) {
+        queue.push(nextNode);
       }
-
-      const moves = this.possibleMoves(currentNode.node.square);
-      console.log(moves);
-    }
+    });
+    // We make sure the while loop keeps going by taking the next node from the queue to process
+    currentNode = queue.shift();
   }
+  // Save the path
+  currentNode.path.forEach((square) => {
+    trampledPath.push(square);
+  });
+
+  // Output shenanigans
+  console.log(`Our knight starts off from [${[x, y]}]`);
+  console.log("---- CALCULATING ----");
+  setTimeout(function () {
+    console.log(
+      `And here we are.. at [${[a, b]}] The knight made it in ${
+        currentNode.path.length - 1
+      } moves.`
+    );
+    console.log("The path taken was:");
+    console.log(trampledPath);
+  }, 1500);
 }
 
-function knightMoves(start, end) {
-  const myKnight = new knight(start, end);
-  const path = myKnight.pathfinder();
-  console.log(knight);
-  console.log(path);
-  return myKnight;
-}
-
-knightMoves([1, 1], [5, 5]);
+knightMoves([0, 1], [5, 6]);
